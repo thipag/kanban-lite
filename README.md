@@ -82,7 +82,7 @@ git push -u origin main
    - `kanban-db` (PostgreSQL free tier) for persistence.
 3. Before the first deploy, configure the unsynced environment variables:
    - `kanban-lite-api` service:
-     - `DATABASE_URL`: copy the Internal Database URL from `kanban-db`.
+     - `DATABASE_URL`: copy the **Internal Database URL** from `kanban-db`. Replace the `postgres://` prefix with `postgresql+psycopg://` (retain the rest of the string, including `?sslmode=require` if present).
      - `AUTO_MIGRATE`: already set to `true` in the blueprint, keep it.
      - `PORT`: `8000`.
    - `kanban-lite-web` static site:
