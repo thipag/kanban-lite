@@ -86,9 +86,9 @@ git push -u origin main
      - `AUTO_MIGRATE`: already set to `true` in the blueprint, keep it.
      - `PORT`: `8000`.
    - `kanban-lite-web` static site:
-     - `VITE_API_URL`: set to the public URL of `kanban-lite-api` (for example `https://kanban-lite-api.onrender.com`).
+     - `VITE_API_URL`: leave blank for the first deploy; after the API service is live, copy its public URL (such as `https://kanban-lite-api.onrender.com`) into this variable and redeploy the static site.
 4. Trigger the blueprint deploy. With `AUTO_MIGRATE=true`, the backend will apply Alembic migrations on startup.
-5. After the deploy finishes, visit the static site URL to confirm the board is live.
+5. Once the API finishes provisioning, update `VITE_API_URL` with its public address and redeploy `kanban-lite-web`, then visit the static site URL to confirm the board is live.
 
 ## Environment Variables
 | Variable        | Description                                                                 |

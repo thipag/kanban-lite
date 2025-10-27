@@ -21,7 +21,7 @@ services:
     rootDir: web
     envVars:
       - key: VITE_API_URL
-        value: https://kanban-lite-api.onrender.com
+        sync: false
 databases:
   - name: kanban-db
     plan: free
