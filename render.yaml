@@ -11,14 +11,15 @@ services:
         value: "true"
       - key: PORT
         value: "8000"
-  - type: static
+  - type: web
     name: kanban-lite-web
-    envVars:
-      - key: VITE_API_URL
-        sync: false
+    env: static
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
     rootDir: web
+    envVars:
+      - key: VITE_API_URL
+        sync: false
 databases:
   - name: kanban-db
     plan: free
