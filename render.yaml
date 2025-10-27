@@ -6,7 +6,9 @@ services:
     dockerfilePath: backend/Dockerfile
     envVars:
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: kanban-db
+          property: internalConnectionString
       - key: AUTO_MIGRATE
         value: "true"
       - key: PORT
@@ -19,7 +21,7 @@ services:
     rootDir: web
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://kanban-lite-api.onrender.com
 databases:
   - name: kanban-db
     plan: free
