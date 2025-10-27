@@ -83,12 +83,11 @@ git push -u origin main
 3. Before the first deploy, configure the unsynced environment variables:
    - `kanban-lite-api` service:
      - `DATABASE_URL`: copy the **Internal Database URL** from `kanban-db`. Replace the `postgres://` prefix with `postgresql+psycopg://` (retain the rest of the string, including `?sslmode=require` if present).
-     - `AUTO_MIGRATE`: already set to `true` in the blueprint, keep it.
-     - `PORT`: `8000`.
+     - `AUTO_MIGRATE`: already set to `true`; leave it on so migrations run during startup.
    - `kanban-lite-web` static site:
      - `VITE_API_URL`: leave blank for the first deploy; after the API service is live, copy its public URL (such as `https://kanban-lite-api.onrender.com`) into this variable and redeploy the static site.
-4. Trigger the blueprint deploy. With `AUTO_MIGRATE=true`, the backend will apply Alembic migrations on startup.
-5. Once the API finishes provisioning, update `VITE_API_URL` with its public address (for example, the URL printed at the top of the Render dashboard) and redeploy `kanban-lite-web`, then visit the static site URL to confirm the board is live.
+4. Trigger the blueprint deploy. Render will inject the runtime `PORT`, so the backend image automatically listens on the correct socket.
+5. Once the API finishes provisioning, update `VITE_API_URL` with its public address and redeploy `kanban-lite-web`, then visit the static site URL to confirm the board is live.
 
 ## Environment Variables
 | Variable        | Description                                                                 |
