@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: kanban-lite-api
+    env: docker
+    plan: free
+    dockerfilePath: backend/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTO_MIGRATE
+        value: "true"
+      - key: PORT
+        value: "8000"
+  - type: static
+    name: kanban-lite-web
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    rootDir: web
+databases:
+  - name: kanban-db
+    plan: free
