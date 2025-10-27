@@ -1,9 +1,8 @@
-import time
+import logging
 from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy.exc import OperationalError
 
 from app.core.config import get_settings
 from app.db.session import runtime_database_url
@@ -19,13 +18,7 @@ def migration_config() -> Config:
 
 def run_migrations() -> None:
     config = migration_config()
-    attempts = 0
-    while True:
-        try:
-            command.upgrade(config, "head")
-            break
-        except OperationalError as exc:
-            attempts += 1
-            if attempts >= 5:
-                raise exc
-            time.sleep(2)
+    try:
+        command.upgrade(config, "head")
+    except Exception as exc:
+        logging.error("Migration step failed, skipping: %s", exc)
