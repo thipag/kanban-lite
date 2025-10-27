@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     version: str = "0.1.0"
     database_url: str = "postgresql+psycopg://postgres:postgres@db:5432/kanban"
     frontend_origin: str = "http://localhost:5173"
+    additional_origins: str | None = None
     auto_migrate: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="allow")

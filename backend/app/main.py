@@ -7,11 +7,16 @@ from app.core.migrate import run_migrations
 
 settings = get_settings()
 
+cors_origins = [settings.frontend_origin]
+if settings.additional_origins:
+    extras = [origin.strip() for origin in settings.additional_origins.split(",") if origin.strip()]
+    cors_origins.extend(extras)
+
 app = FastAPI(title=settings.app_name, version=settings.version)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_origin],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

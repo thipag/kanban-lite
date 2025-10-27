@@ -84,6 +84,8 @@ git push -u origin main
    - `kanban-lite-api` service:
      - `DATABASE_URL`: copy the **Internal Database URL** from `kanban-db`. Replace the `postgres://` prefix with `postgresql+psycopg://` (retain the rest of the string, including `?sslmode=require` if present).
      - `AUTO_MIGRATE`: already set to `true`; leave it on so migrations run during startup.
+     - `FRONTEND_ORIGIN`: set to your static site domain (for example `https://kanban-lite-web.onrender.com`).
+     - `ADDITIONAL_ORIGINS`: list any extra origins you want to allow (comma-separated, e.g. `http://localhost:5173` for local testing).
    - `kanban-lite-web` static site:
      - `VITE_API_URL`: leave it unset for the first run. After the API service is live, copy its public URL (for example `https://kanban-lite-api.onrender.com`) into this variable.
 4. Trigger the blueprint deploy. Render will inject the runtime `PORT`, so the backend image automatically listens on the correct socket.
@@ -94,7 +96,8 @@ git push -u origin main
 |-----------------|-----------------------------------------------------------------------------|
 | `DATABASE_URL`  | Postgres DSN in the format `postgresql+psycopg://user:pass@host:5432/db`.   |
 | `AUTO_MIGRATE`  | `true` applies Alembic migrations during API startup.                       |
-| `FRONTEND_ORIGIN` | Allowed CORS origin (e.g., `http://localhost:5173`).                      |
+| `FRONTEND_ORIGIN` | Primary CORS origin (local default `http://localhost:5173`; set to the Render static site in production). |
+| `ADDITIONAL_ORIGINS` | Optional comma-separated list of extra origins permitted by CORS. |
 | `VITE_API_URL`  | Base URL used by the frontend when calling the API (e.g. `http://localhost:8000` locally, public API URL on Render). |
 
 Use `.env.example` as a reference and keep real secrets out of version control.
