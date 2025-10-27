@@ -8,6 +8,7 @@ from app.core.migrate import run_migrations
 settings = get_settings()
 
 cors_origins = [settings.frontend_origin]
+
 if settings.additional_origins:
     extras = [origin.strip() for origin in settings.additional_origins.split(",") if origin.strip()]
     cors_origins.extend(extras)

@@ -11,9 +11,9 @@ services:
       - key: AUTO_MIGRATE
         value: "true"
       - key: FRONTEND_ORIGIN
-        value: https://kanban-lite-web.onrender.com
+        sync: false
       - key: ADDITIONAL_ORIGINS
-        value: http://localhost:5173
+        sync: false
   - type: web
     name: kanban-lite-web
     env: static
