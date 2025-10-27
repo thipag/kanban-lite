@@ -1,7 +1,8 @@
 from alembic import op
 import sqlalchemy as sa
 
-revision = "2024042901_create_cards_table"
+
+revision = "2025102601_create_cards_table"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -13,7 +14,12 @@ def upgrade() -> None:
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("title", sa.String(length=120), nullable=True),
         sa.Column("description", sa.Text(), nullable=False),
-        sa.Column("status", sa.Enum("todo", "doing", "done", name="card_status", native_enum=False), nullable=False, server_default="todo"),
+        sa.Column(
+            "status",
+            sa.Enum("todo", "doing", "done", name="card_status", native_enum=False),
+            nullable=False,
+            server_default="todo",
+        ),
         sa.Column("created_at", sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(), nullable=False, server_default=sa.func.now()),
         sa.PrimaryKeyConstraint("id"),
