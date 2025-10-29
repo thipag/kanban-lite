@@ -17,3 +17,5 @@ web/.vite/
 playwright-report/
 playwright/.cache/
 .DS_Store
+infra/frontend-dist.zip
+infra/terraform.tfvars

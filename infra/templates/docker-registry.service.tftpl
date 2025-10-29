@@ -1,0 +1,15 @@
+[Unit]
+Description=Private Docker Registry
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=/usr/bin/docker pull registry:2
+ExecStartPre=-/usr/bin/docker stop registry
+ExecStartPre=-/usr/bin/docker rm registry
+ExecStart=/usr/bin/docker run --name registry -p 127.0.0.1:${registry_port}:5000 -v ${registry_data_dir}:/var/lib/registry registry:2
+ExecStop=/usr/bin/docker stop registry
+
+[Install]
+WantedBy=multi-user.target

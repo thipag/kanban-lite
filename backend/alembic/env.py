@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from app import models
 from app.core.config import get_settings
 from app.db.base import Base
+from app.db.session import escaped_runtime_database_url
 
 config = context.config
 
@@ -27,7 +28,7 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = get_url()
+    configuration["sqlalchemy.url"] = escaped_runtime_database_url()
     connectable = engine_from_config(configuration, prefix="sqlalchemy.", poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)

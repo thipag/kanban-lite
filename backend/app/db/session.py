@@ -14,5 +14,9 @@ def runtime_database_url() -> str:
     return url.render_as_string(hide_password=False)
 
 
+def escaped_runtime_database_url() -> str:
+    return runtime_database_url().replace("%", "%%")
+
+
 engine = create_engine(runtime_database_url(), pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)

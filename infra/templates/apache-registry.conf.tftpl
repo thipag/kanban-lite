@@ -1,0 +1,40 @@
+<VirtualHost *:80>
+    ServerName ${server_name}
+
+    RewriteEngine On
+    RewriteRule ^/?(.*)$ https://%%{SERVER_NAME}/$1 [R=301,L]
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+    ServerName ${server_name}
+
+    SSLEngine on
+    SSLCertificateFile      ${ssl_certificate_file}
+    SSLCertificateKeyFile   ${ssl_certificate_key_file}
+%{ if ssl_certificate_chain_file != "" }
+    SSLCertificateChainFile ${ssl_certificate_chain_file}
+%{ endif }
+    Protocols h2 http/1.1
+
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ProxyAddHeaders On
+    RequestHeader set X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Port  "443"
+    RequestHeader set X-Forwarded-Host  "%%{HTTP_HOST}s"
+
+    ProxyPass        / http://127.0.0.1:${registry_port}/ nocanon
+    ProxyPassReverse / http://127.0.0.1:${registry_port}/
+
+    <Location />
+        AuthType Basic
+        AuthName "Private Registry"
+        AuthUserFile ${htpasswd_file}
+        Require valid-user
+    </Location>
+
+    ErrorLog  ${apache_log_dir}/${replace(server_name, ".", "-")}-error.log
+    CustomLog ${apache_log_dir}/${replace(server_name, ".", "-")}-access.log combined
+</VirtualHost>
+</IfModule>

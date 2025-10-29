@@ -1,0 +1,51 @@
+<VirtualHost *:80>
+    ServerName ${server_name}
+%{ if server_alias != "" }
+    ServerAlias ${server_alias}
+%{ endif }
+
+    RewriteEngine On
+    RewriteRule ^/?(.*)$ https://%%{SERVER_NAME}/$1 [R=301,L]
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+    ServerName ${server_name}
+%{ if server_alias != "" }
+    ServerAlias ${server_alias}
+%{ endif }
+
+    SSLEngine on
+    SSLCertificateFile      ${ssl_certificate_file}
+    SSLCertificateKeyFile   ${ssl_certificate_key_file}
+%{ if ssl_certificate_chain_file != "" }
+    SSLCertificateChainFile ${ssl_certificate_chain_file}
+%{ endif }
+    Protocols h2 http/1.1
+
+    # Hardening básica
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+
+    DocumentRoot ${static_root}
+
+    <Directory ${static_root}>
+        Options FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    ProxyPreserveHost On
+    ProxyAddHeaders On
+    RequestHeader set X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Port  "443"
+    RequestHeader set X-Forwarded-Host  "%%{HTTP_HOST}s"
+
+    ProxyPass        ${api_subpath}/ http://127.0.0.1:${api_port}/ nocanon
+    ProxyPassReverse ${api_subpath}/ http://127.0.0.1:${api_port}/
+
+    ErrorLog  ${apache_log_dir}/${replace(server_name, ".", "-")}-error.log
+    CustomLog ${apache_log_dir}/${replace(server_name, ".", "-")}-access.log combined
+</VirtualHost>
+</IfModule>

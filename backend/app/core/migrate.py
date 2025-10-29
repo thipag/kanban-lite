@@ -5,14 +5,14 @@ from alembic import command
 from alembic.config import Config
 
 from app.core.config import get_settings
-from app.db.session import runtime_database_url
+from app.db.session import escaped_runtime_database_url
 
 
 def migration_config() -> Config:
     base_path = Path(__file__).resolve().parents[2]
     config = Config(str(base_path / "alembic.ini"))
     config.set_main_option("script_location", str(base_path / "alembic"))
-    config.set_main_option("sqlalchemy.url", runtime_database_url())
+    config.set_main_option("sqlalchemy.url", escaped_runtime_database_url())
     return config
 
 

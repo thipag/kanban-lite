@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  api:
+    image: ${backend_image}
+    restart: unless-stopped
+    env_file:
+      - app.env
+    environment:
+      AUTO_MIGRATE: "true"
+      PORT: "${api_port}"
+    ports:
+      - "127.0.0.1:${api_port}:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+%{ if postgres_network_name != "" }
+    networks:
+      - ${postgres_network_name}
+%{ endif }
+%{ if postgres_network_name != "" }
+
+networks:
+  ${postgres_network_name}:
+    external: true
+%{ endif }
