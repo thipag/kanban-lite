@@ -4,8 +4,7 @@ SHELL := /bin/bash
 
 -include .env
 
-export $(shell sed -ne 's/^
-//;s/[[:space:]]*=.*//p' .env)
+export $(shell sed -ne 's/^//;s/[[:space:]]*=.*//p' .env)
 
 PYTHON_CMD := $(if $(wildcard .venv/bin/python),$(abspath .venv/bin/python),python3)
 PYTEST_CMD := $(if $(wildcard .venv/bin/pytest),$(abspath .venv/bin/pytest),pytest)
