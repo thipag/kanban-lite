@@ -2,59 +2,69 @@
 
 ## 1. Prepare local environment files
 
-1. Copy the root environment template and populate the registry settings used by the Make targets. Keep this file out of version control.
-   ```bash
-   cp .env.example .env
-   ```
-   | Variable | Meaning |
-   |----------|---------|
-   | `REGISTRY` | Base URL of your private registry (e.g. `registry.example.com`). |
-   | `REGISTRY_USERNAME` | User that has push access to the registry. Leave empty if anonymous pushes are allowed. |
-   | `REGISTRY_PASSWORD` | Password used by `docker login` before pushing the backend image. |
-   | `BACKEND_IMAGE_NAME` | Repository name for the backend image (default `kanban-lite-api`). |
-   | `TAG` | Version tag applied to the backend image (e.g. `2024-05-24.1`). |
-   | `TF_ARGS` | Extra arguments passed to `terraform apply` (default `-auto-approve`). |
+### Root `.env`
 
-2. Copy the Terraform variables template, fill in host access and domain data, and save it as `infra/terraform.tfvars` (ignored by git).
-   ```bash
-   cp infra/terraform.tfvars.example infra/terraform.tfvars
-   ```
-   | Variable | Meaning |
-   |----------|---------|
-| `ssh_host`, `ssh_user`, `ssh_port`, `ssh_password` | SSH endpoint the Terraform provisioners will use. Password authentication is used for the remote exec provisioners. |
-| `sudo_password` | Optional override for privilege escalation. Leave blank to reuse `ssh_password`. |
-   | `project_dir` | Directory on the server where Compose files and env vars live (default `/opt/kanban-lite`). |
-   | `backend_image` | Fully qualified image reference that the server should pull, for example `registry.example.com/kanban-lite-api:2024-05-24.1`. |
-   | `database_url` | DSN pointing at the PostgreSQL instance that hosts the production data. |
-   | `frontend_origin` | Public URL of the frontend (used for CORS in FastAPI). |
+Copy the template and fill in the values that the Make targets require:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Meaning |
+|----------|---------|
+| `REGISTRY` | Base URL of the container registry (e.g. `registry.example.com`). |
+| `REGISTRY_USERNAME` | Registry user with push permissions. Leave empty if not required. |
+| `REGISTRY_PASSWORD` | Password used by `docker login` before pushes. |
+| `BACKEND_IMAGE_NAME` | Repository name for the backend image (default `kanban-lite-api`). |
+| `TAG` | Image tag applied during `make package-backend` (e.g. `2024-05-24.1`). |
+| `TF_ARGS` | Extra flags passed to `terraform apply` (default `-auto-approve`). |
+
+### Terraform variables
+
+Create a private copy of the Terraform variable file:
+
+```bash
+cp infra/terraform.tfvars.example infra/terraform.tfvars
+```
+
+| Variable | Meaning |
+|----------|---------|
+| `ssh_host`, `ssh_user`, `ssh_port`, `ssh_password` | SSH endpoint used by Terraform provisioners. Password-based authentication is expected. |
+| `sudo_password` | Optional sudo password; leave blank to reuse `ssh_password`. |
+| `project_dir` | Location on the server where Compose files and env vars are written (default `/opt/kanban-lite`). |
+| `backend_image` | Fully qualified backend image (e.g. `registry.example.com/kanban-lite-api:2024-05-24.1`). |
+| `database_url` | SQLAlchemy DSN pointing at the production Postgres instance. |
+| `frontend_origin` | Public URL served by Apache and used for FastAPI CORS. |
 | `api_port` | Local port exposed by the backend container (default `8000`). |
-| `postgres_network_name` | Optional external Docker network that already contains your Postgres container (e.g. `"firefly-net"`). Leave blank to skip attaching. |
-| `registry_port` | Local port where the Docker registry listens (default `5000`). |
-   | `registry_data_dir` | Persistent volume mounted into the registry container (default `/var/lib/registry`). |
-   | `app_server_name`, `app_server_alias` | Canonical domain and optional alias rendered into the Apache virtual host for the frontend (e.g. `kanban-lite.example.com`). |
-   | `registry_server_name` | Domain dedicated to the private registry (e.g. `registry.example.com`). |
-   | `registry_basic_auth_user` | Username enforced by Apache Basic Auth when accessing the registry. |
-   | `registry_basic_auth_password` | Plaintext password the deploy will use for `docker login` before pulling images (leave blank if the registry allows anonymous pulls). |
-   | `registry_basic_auth_password_hash` | Hash generated via `htpasswd -nb <user> <password>`; Apache reads this value to validate pushes/pulls via HTTPS. |
-   | `api_subpath` | URL prefix that proxies to the backend (default `/api`). |
-   | `static_root` | Directory where the frontend bundle is deployed (default `/var/www/kanban-lite`). |
-   | `frontend_dist_dir` | Override for the local dist directory if it is not `web/dist` (keep `null` to use the default). |
-   | `apache_sites_available_dir`, `apache_htpasswd_dir`, `apache_log_dir` | Paths that match your Apache installation. Defaults are `/etc/apache2/sites-available`, `/etc/apache2/htpasswd`, `/var/log/apache2`. |
-   | `apache_user`, `apache_group` | UID/GID that should own the static files (default `www-data`). |
-   | `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_certificate_chain_file` | Certificate files already configured on the server. The chain file is optional. |
+| `postgres_network_name` | Optional external Docker network that the backend container should join. Leave blank if not needed. |
+| `registry_port` | Local port bound by the private registry service (default `5000`). |
+| `registry_data_dir` | Persistent volume path for the registry (default `/var/lib/registry`). |
+| `app_server_name`, `app_server_alias` | Primary domain (and optional alias) for the frontend virtual host. |
+| `registry_server_name` | Domain used by the registry virtual host. |
+| `registry_basic_auth_user` | Basic-auth username enforced by Apache for registry access. |
+| `registry_basic_auth_password` | Plaintext password used when Terraform runs `docker login`. Leave blank if not required. |
+| `registry_basic_auth_password_hash` | Output of `htpasswd -nb <user> <password>`; Apache validates registry requests against this hash. |
+| `api_subpath` | URL prefix proxied to the backend (default `/api`). |
+| `static_root` | Directory where the compiled frontend is deployed (default `/var/www/kanban-lite`). |
+| `frontend_dist_dir` | Override for the local Vite build directory (default `../web/dist`). |
+| `apache_sites_available_dir`, `apache_htpasswd_dir`, `apache_log_dir` | Apache paths that receive the generated configuration (`/etc/apache2/sites-available`, `/etc/apache2/htpasswd`, `/var/log/apache2` by default). |
+| `apache_user`, `apache_group` | Owner/group applied to the static files (default `www-data`). |
+| `ssl_certificate_file`, `ssl_certificate_key_file`, `ssl_certificate_chain_file` | TLS assets already present on the server. The chain file is optional. |
 
 ## 2. Build and publish artifacts
 
-Run the Make targets after the variables are in place:
-- `make package-backend` — builds the FastAPI image, logs into the registry (if credentials are provided), and pushes the new tag.
-- `make package-frontend` — runs `npm run build` and prepares `web/dist` for upload. This target is included automatically when you run the combined deploy.
-- `make deploy` — executes both package targets and then `terraform -chdir=infra apply $(TF_ARGS)`.
+Run the Make targets after the variables are configured:
 
-You can validate individual Terraform steps using the `-target` flag:
-- `terraform -chdir=infra apply -target=null_resource.host_setup` (installs missing packages and prepares directories).
-- `terraform -chdir=infra apply -target=null_resource.registry_stack` (provisions the private registry service and its Apache virtual host).
-- `terraform -chdir=infra apply -target=null_resource.app_stack` (syncs the frontend bundle, backend compose file, and the application virtual host).
+- `make package-backend` — build the FastAPI image, log in to the registry, and push the new tag.
+- `make package-frontend` — run `npm run build` and stage the Vite output in `web/dist`.
+- `make deploy` — invoke both package targets and then run `terraform -chdir=infra apply $(TF_ARGS)`.
 
-> **Tip:** If your production Postgres already runs in its own compose stack (e.g. `firefly-db` on the `firefly-net` network), set `postgres_network_name = "firefly-net"` in `infra/terraform.tfvars` and point `database_url` at the service name (for example `postgresql+psycopg://user:pass@firefly-db:5432/db`). The compose template will attach the API container to that network automatically.
+## 3. Terraform targets
 
-`null_resource` é um tipo de recurso Terraform neutro que executa provisioners (como `remote-exec` e `file`). Aqui eles agrupam tarefas por papel: `host_setup`, `registry_stack` e `app_stack`. Não representam infraestrutura física; servem para organizar passos e permitir execuções segmentadas.
+To apply individual stages, use the `-target` flag:
+
+- `terraform -chdir=infra apply -target=null_resource.host_setup`
+- `terraform -chdir=infra apply -target=null_resource.registry_stack`
+- `terraform -chdir=infra apply -target=null_resource.app_stack`
+
+`null_resource` is a Terraform utility resource that exists solely to run provisioners (`remote-exec`, `file`, etc.). In this project the three blocks (`host_setup`, `registry_stack`, `app_stack`) act as logical checkpoints so you can roll out infrastructure in phases.
